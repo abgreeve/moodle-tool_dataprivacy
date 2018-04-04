@@ -30,65 +30,73 @@
 
     Example context (json):
     {
+        "compliant" : "True",
+        "raw_component" : "core_comment",
+        "component" : "Core comment",
+        "external" : "True",
+        "metadata" : {
+            "name" : "comments",
+            "type" : "database_table",
+            "summary" : "Stores comments of users",
+            "fields" : {
+                "field_name" : "content",
+                "field_summary" : "Stores the text of the content."
+            }
+        }
     }
 }}
 
 <div class="row">
     <div class="col">
-        <h4 class="d-inline p-r-1 p-l-1" id="{{raw_component}}">{{component}}</h4>
         {{#compliant}}
-           <span class="badge badge-pill badge-success">{{#str}}compliant, tool_dataprivacy{{/str}}</span>
-           <span class="pull-right"><a class="expand" data-component="{{raw_component}}" href='#'>{{#pix}}t/collapsed, moodle, string!{{/pix}}</a></span>
+            <a class="expand" data-component="{{raw_component}}" href='#'>
+            <h4 class="d-inline p-r-1 p-l-1" id="{{raw_component}}">{{#pix}}t/collapsed, moodle, {{#str}}expandplugin, tool_dataprivacy{{/str}}{{/pix}}{{component}}</h4>
+            </a>
+            <span class="badge badge-pill badge-success">{{#str}}compliant, tool_dataprivacy{{/str}}</span>
         {{/compliant}}
         {{^compliant}}
-           <span class="badge badge-pill badge-warning">{{#str}}notcompliant, tool_dataprivacy{{/str}}</span>
-        {{/compliant}}
-    </div>
-</div>
-<!-- <div class="row"> -->
-    <!-- <div class="col"> -->
-        {{#compliant}}
-            <div class="hide" data-whatchama="{{raw_component}}" aria-expanded="false">
-            {{#metadata}}
-                <!-- <div class="container-fluid"> -->
-                    <hr />
-                    <div class="row">
-                        <div class="span3 col-xs-3">
-                            {{#link}}
-                                <a href="#{{name}}"><h5>{{name}}</h5></a>
-                            {{/link}}
-                            {{^link}}
-                                <h5>{{name}}</h5>
-                            {{/link}}
-                            <div class="p-b-1 small text-muted">{{type}}</div>
-                        </div>
-                        <div class="span9 col-xs-9">{{summary}}</div>
-                    </div>
-                    <!-- <div class="row"> -->
-                        <table class="table table-sm">
-                            <tbody>
-                            {{#fields}}
-                                <tr class="row">
-                                    <td class="span3 col-xs-3">{{field_name}}</td>
-                                    <td class="span9 col-xs-9">{{field_summary}}</td>
-                                </tr>
-                            {{/fields}}
-                            </tbody>
-                        </table>
-                    <!-- </div> -->
-                <!-- </div> -->
-            {{/metadata}}
-            {{#nullprovider}}
-                <hr />
-                <div>{{nullprovider}}</div>
-            {{/nullprovider}}
-            </div>
+            <h4 class="d-inline p-r-1 p-l-1" id="{{raw_component}}">{{component}}</h4>
+            <span class="badge badge-pill badge-warning">{{#str}}notcompliant, tool_dataprivacy{{/str}}</span>
         {{/compliant}}
         {{#external}}
-        <div>External plugin!</div>
+            <span class="badge badge-pill badge-notice">{{#str}}external, tool_dataprivacy{{/str}}</span>
         {{/external}}
-    <!-- </div> -->
-<!-- </div> -->
+    </div>
+</div>
+
+    {{#compliant}}
+        <div class="hide" data-section="{{raw_component}}" aria-expanded="false">
+        {{#metadata}}
+                <hr />
+                <div class="row-fluid">
+                    <div class="span2 col-xs-3">
+                        {{#link}}
+                            <a href="#{{name}}"><h5>{{name}}</h5></a>
+                        {{/link}}
+                        {{^link}}
+                            <h5>{{name}}</h5>
+                        {{/link}}
+                        <div class="p-b-1 small text-muted">{{type}}</div>
+                    </div>
+                    <div class="span10 col-xs-9">{{summary}}</div>
+                </div>
+                <table class="table table-sm">
+                    <tbody>
+                    {{#fields}}
+                        <tr class="row">
+                            <td class="col-xs-3">{{field_name}}</td>
+                            <td class="col-xs-9">{{field_summary}}</td>
+                        </tr>
+                    {{/fields}}
+                    </tbody>
+                </table>
+        {{/metadata}}
+        {{#nullprovider}}
+            <hr />
+            <div>{{nullprovider}}</div>
+        {{/nullprovider}}
+        </div>
+    {{/compliant}}
 <hr />
 
 
@@ -103,19 +111,17 @@ require(['jquery', 'core/url'], function($, url) {
         e.stopPropagation();
         e.stopImmediatePropagation();
         var component = $(this).data('component');
-        var metadata = $('[data-whatchama=\'' + component + '\']');
+        var metadata = $('[data-section=\'' + component + '\']');
         var metainfo = metadata.attr('class');
-        // var metainfo = $('[data-whatchama=\'' + component + '\']').attr('class');
-        if (metainfo === 'hide') {
-            $('[data-whatchama=\'' + component + '\']').attr('class', 'visible');
+        if (metadata.attr('class') === 'hide') {
+            metadata.attr('class', 'visible');
             $(this).children('img').attr('src', expandedImage.attr('src'));
             metadata.attr('aria-expanded', true);
         } else {
-            $('[data-whatchama=\'' + component + '\']').attr('class', 'hide');
+            metadata.attr('class', 'hide');
             $(this).children('img').attr('src', collapsedImage.attr('src'));
             metadata.attr('aria-expanded', false);
         }
-        
     });
 });
 {{/js}}

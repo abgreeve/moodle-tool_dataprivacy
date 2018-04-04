@@ -30,48 +30,72 @@
 
     Example context (json):
     {
+        "types" : {
+            "plugin_type_raw" : "mod",
+            "plugin_type" : "Activities and Modules"
+        }
     }
 }}
 <div>
-    <h2>Plugin compliance registry</h2>
+    <h2>{{#str}}pluginregistrytitle, tool_dataprivacy{{/str}}</h2>
+    <div><a class="tool_dataprivacy-expand-all" href="#" data-visibility-state='visible'>{{#str}}visible, tool_dataprivacy{{/str}}</a></div>
     {{#types}}
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    <h3 class="d-inline" id="{{plugin_type_raw}}">{{plugin_type}}</h3>
-                    <span class="pull-right"><a class="other-expand" href='#'>{{#pix}}t/collapsed, moodle, string!{{/pix}}</a></span>
+                    <a class="other-expand" href='#' data-plugin="{{plugin_type_raw}}">
+                    <h3 id="{{plugin_type_raw}}">{{#pix}}t/collapsed, moodle, {{#str}}expandplugintype, tool_dataprivacy{{/str}}{{/pix}}{{plugin_type}}</h3>
+                    </a>
                 </div>
             </div>
+            <div class="hide" data-plugintarget="{{plugin_type_raw}}" aria-expanded="false">
                 {{#plugins}}
                     {{> tool_dataprivacy/component_status}}
                 {{/plugins}}
+            </div>
         </div>
     {{/types}}
 </div>
 {{#js}}
-require(['jquery', 'core/url'], function($, url) {
+require(['jquery', 'core/url', 'core/str'], function($, url, str) {
 
     var expandedImage = $('<img alt="" src="' + url.imageUrl('t/expanded') + '"/>');
     var collapsedImage = $('<img alt="" src="' + url.imageUrl('t/collapsed') + '"/>');
 
-    $('.expand').click(function(e) {
+    $('.other-expand').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
-        var component = $(this).data('component');
-        var metadata = $('[data-whatchama=\'' + component + '\']');
-        var metainfo = metadata.attr('class');
-        // var metainfo = $('[data-whatchama=\'' + component + '\']').attr('class');
-        if (metainfo === 'hide') {
-            $('[data-whatchama=\'' + component + '\']').attr('class', 'visible');
+        window.console.log(this);
+        var plugin = $(this).data('plugin');
+        var metadata = $('[data-plugintarget=\'' + plugin + '\']');
+        if (metadata.attr('class') === 'hide') {
+            metadata.attr('class', 'visible');
             $(this).children('img').attr('src', expandedImage.attr('src'));
             metadata.attr('aria-expanded', true);
         } else {
-            $('[data-whatchama=\'' + component + '\']').attr('class', 'hide');
+            metadata.attr('class', 'hide');
             $(this).children('img').attr('src', collapsedImage.attr('src'));
             metadata.attr('aria-expanded', false);
         }
-        
+    });
+
+    $('.tool_dataprivacy-expand-all').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var nextstate = $(this).data('visibilityState');
+        var currentstate = (nextstate == 'visible') ? 'hide' : 'visible';
+        var ariaexpandedstate = (nextstate == 'visible') ? true : false;
+        $('.' + currentstate).each(function() {
+            $(this).attr('class', nextstate);
+            $(this).attr('aria-expanded', ariaexpandedstate);
+        });
+        $(this).data('visibilityState', currentstate);
+
+        str.get_string(currentstate, 'tool_dataprivacy').then(function(langString) {
+            var visibilitynode = $('.tool_dataprivacy-expand-all');
+            visibilitynode.html(langString);
+        }).catch(Notification.exception);
     });
 });
 {{/js}}

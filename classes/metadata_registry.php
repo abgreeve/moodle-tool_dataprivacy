@@ -33,14 +33,19 @@ defined('MOODLE_INTERNAL') || die();
  */
 class metadata_registry {
 
-    public function do_what_i_want_take_2() {
+    /**
+     * Returns plugin types / plugins and the user data that it stores in a format that can be sent to a template.
+     *
+     * @return array An array with all of the plugin types / plugins and the user data they store.
+     */
+    public function get_registry_metadata() {
         $manager = new \core_privacy\manager();
         $pluginman = \core_plugin_manager::instance();
         $contributedplugins = $this->get_contrib_list();
         $metadata = $manager->get_metadata_for_components();
         $fullyrichtree = $this->get_full_component_list();
-        foreach ($fullyrichtree as $key => $values) {
-            $plugintype = $values['plugin_type']; 
+        foreach ($fullyrichtree as $branch => $leaves) {
+            $plugintype = $leaves['plugin_type'];
             $plugins = array_map(function($component) use ($manager, $metadata, $contributedplugins, $plugintype, $pluginman) {
                 // Use the plugin name for the plugins, ignore for core subsystems.
                 $internaldata = ($plugintype == 'core') ? ['component' => $component] :
@@ -65,15 +70,23 @@ class metadata_registry {
                     $internaldata['external'] = true;
                 }
                 return $internaldata;
-            }, $values['plugins']);
-            $fullyrichtree[$key]['plugin_type_raw'] = $plugintype;
+            }, $leaves['plugins']);
+            $fullyrichtree[$branch]['plugin_type_raw'] = $plugintype;
             // We're done using the plugin type. Convert it to a readable string.
-            $fullyrichtree[$key]['plugin_type'] = $pluginman->plugintype_name($plugintype);
-            $fullyrichtree[$key]['plugins'] = $plugins;
+            $fullyrichtree[$branch]['plugin_type'] = $pluginman->plugintype_name($plugintype);
+            $fullyrichtree[$branch]['plugins'] = $plugins;
         }
         return $fullyrichtree;
     }
 
+    /**
+     * Formats the metadata for use with a template.
+     *
+     * @param  array $collection The collection associated with the component that we want to expand and format.
+     * @param  string $component The component that we are dealing in
+     * @param  array $internaldata The array to add the formatted metadata to.
+     * @return array The internal data array with the formatted metadata.
+     */
     protected function format_metadata($collection, $component, $internaldata) {
         foreach ($collection as $collectioninfo) {
             $privacyfields = $collectioninfo->get_privacy_fields();
@@ -103,6 +116,11 @@ class metadata_registry {
         return $internaldata;
     }
 
+    /**
+     * Return the full list of components.
+     *
+     * @return array An array of plugin types which contain plugin data.
+     */
     protected function get_full_component_list() {
         $root = array_map(function($plugintype) {
             return [

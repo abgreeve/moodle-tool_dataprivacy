@@ -38,7 +38,7 @@ echo $output->header();
 
 // Get data!
 $metadatatool = new \tool_dataprivacy\metadata_registry();
-$metadata = $metadatatool->do_what_i_want_take_2();
+$metadata = $metadatatool->get_registry_metadata();
 
 $dataregistry = new tool_dataprivacy\output\data_registry_compliance_page($metadata);
 
